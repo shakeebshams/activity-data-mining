@@ -18,6 +18,7 @@ let db
 
 async function main() {
     //using for loop intead of for each as it would be processed async by default
+    let cityList = [];
     MongoClient.connect(DBurl, { useNewUrlParser: true }, async (err, client) => {
         if (err) return console.log(err);
         // Storing a reference to the database so you can use it later
@@ -30,19 +31,25 @@ async function main() {
         //let docArray = cursor.toArray();
         //let arr = collection.find().snapshot();
         //console.log(arr.length)
-        
         await collection.find().snapshot().forEach(async function(doc) {
             try {
                 if (doc.id) {
-                    console.log("city_id: " + doc.id);
-                    await activity_request(doc.id);
+                    //console.log("city_id: " + doc.id);
+                    cityList.push(doc.id);
+                    //await activity_request(doc.id);
                 }
             } catch (err) {
                 console.error(error);
             }
         });
-        console.log("DONE DONE DONE DONE DONE DONE DONE DONE DONE DONE DONE DONE DONE")
+
+        for (let i = 0; i < cityList.length; i++) {
+            console.log("processing city #" + i);
+            let city_id = cityList[i];
+            await activity_request(city_id);
+        }
     });
+
 }
 
 async function activity_request(location_id) {
@@ -102,7 +109,7 @@ async function process_data(data) {
                 tripadvisor_id: activity.location_id
             }
             if (isGolf && activity_data.country === 'United States') {
-                let collection2 = db.collection("golfUS3");
+                let collection2 = db.collection("golfygolf");
                 await collection2.insertOne(activity_data, function(err, res) {
                     if (err) {
                         console.log(err);
